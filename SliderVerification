@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SliderVerification</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+        }
+        .drag{
+            width: 300px;
+            height: 40px;
+            line-height: 40px;
+            background: #e8e8e8;
+            position: relative;
+            margin: 0 auto;
+        }
+        .bg{
+            width: 40px;
+            height: 100%;
+            position: absolute;
+            background-color: #75CDF9;
+        }
+        .text{
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            user-select: none;
+        }
+        .btn{
+            width: 40px;
+            height: 38px;
+            position: absolute;
+            border: 1px solid #ccc;
+            cursor: move;
+            text-align: center;
+            background: #fff;
+            user-select: none;
+            color: #666;
+        }
+        .img-box{
+            position: relative;
+            width: 300px;
+            margin: 0 auto;
+        }
+        .poster{
+            width: 100%;
+        }
+        .cover{
+            position: absolute;
+            width: 50px;
+        }
+        .move-cover{
+            position: absolute;
+            width: 50px;
+        }
+    </style>
+</head>
+<body>
+<div class="img-box">
+    <img src="./img/视频封面.png" alt="" class="poster">
+    <img src="./img/xdm.png" alt="" class="cover">
+    <img src="./img/图按钮.png" alt="" class="move-cover">
+</div>
+<div class="drag">
+    <div class="bg"></div>
+    <div class="text" onselectstart="return false">请拖动滑块解锁</div>
+    <div class="btn">&gt;&gt;</div>
+</div>
+<script>
+    let $ = function (selector) {
+        return document.querySelector(selector)
+    };
+    let box = $('.drag'); // 容器
+    let bg = $('.bg'); // 背景
+    let text = $('.text'); // 文字
+    let btn = $('.btn'); // 按钮
+    let success = false; // 是否成功
+    let distance = box.offsetWidth - btn.offsetWidth; // 滑动到底距离
+
+    let imgBox = $('.img-box'), // 图片容器
+        poster = $('.poster'), // 背景
+        cover = $('.cover'), // 判定图片
+        moveCover = $('.move-cover'); // 拖动图片
+
+    let h = imgBox.offsetHeight;
+    let w = imgBox.offsetWidth;
+    let imgX = Math.random() * w; // 判定图片随机坐标
+
+    cover.style.top = h / 2 + 'px';
+    cover.style.left = imgX + 'px'; // 随机cover X坐标
+
+    moveCover.style.top = h / 2 + 'px';
+    moveCover.style.left = 0;
+
+    btn.onmousedown = function (e) {
+        btn.style.transition = '';
+        bg.style.transition = '';
+
+        let event = e || window.event;
+        let downX = event.clientX; // 第一次点击是鼠标的clientX-距离body左边距离
+
+        document.onmousemove = function (e) {
+            let event = e || window.event;
+            let moveX = event.clientX;
+
+            let offsetX = moveX - downX; // 鼠标拖动距离
+            if (offsetX > distance){
+            	offsetX = distance
+            }else if (offsetX < 0){
+            	offsetX = 0
+            }
+
+            btn.style.left = offsetX + 'px';
+            bg.style.width = offsetX + 'px';
+	        moveCover.style.left = offsetX + 'px';
+
+        };
+        document.onmouseup = function (e) {
+	        let event = e || window.event;
+	        let moveX = event.clientX;
+
+	        let offsetX = moveX - downX;
+	        if (offsetX > Number(imgX) - 10 && offsetX < Number(imgX) + 10){
+		        text.innerHTML = "验证通过";
+		        text.style.color = "#fff";
+		        btn.innerHTML = "&radic;";
+		        btn.style.color = "green";
+		        bg.style.backgroundColor = "lightgreen";
+		        //2.设置滑动成功后的状态
+		        success = true;
+		        //成功后，清除掉鼠标按下事件和移动事件（因为移动时并不会涉及到鼠标松开事件）
+		        btn.onmousedown = null;
+		        document.onmousemove = null;
+
+		        //3.成功解锁后的回调函数
+		        setTimeout(function(){
+			        console.log('解锁成功！');
+			        console.log(imgX, offsetX);
+			        console.log(offsetX > Number(imgX) - 20, offsetX < Number(imgX) + 20);
+		        },100);
+	        }
+            if (success){
+            	return
+            } else {
+	            btn.style.left = 0;
+	            bg.style.width = 0;
+	            moveCover.style.left = 0;
+	            btn.style.transition = "left 1s ease";
+	            moveCover   .style.transition = "left 1s ease";
+	            bg.style.transition = "width 1s ease";
+            }
+	        //只要鼠标松开了，说明此时不需要拖动滑块了，那么就清除鼠标移动和松开事件。
+	        document.onmousemove = null;
+	        document.onmouseup = null;
+        }
+    }
+</script>
+</body>
+</html>
